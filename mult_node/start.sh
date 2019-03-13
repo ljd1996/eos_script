@@ -72,7 +72,7 @@ function prepare() {
 
 	echo "----------------------"
 	echo -e "\n---start node 1---\n"
-	nodeos --enable-stale-production --producer-name eosio --config node1.ini \
+	nodeos --producer-name eosio --config node1.ini \
 	--config-dir conf --data-dir data/node1 \
 	--max-transaction-time=1000 --delete-all-blocks > log/node1.log 2>&1 &
 }
