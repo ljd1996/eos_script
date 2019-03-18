@@ -1,0 +1,7 @@
+a: EOS5hBSuDvcU2hHZJLAWCzBCCS7pV6SeQ4FuMhLPQPYqu9hcFakhy
+b: EOS5gUGqvjsoAmqEJvSBAygi7XF75CaCDfpysZRRVPRBdAzcirTWG
+t: 
+
+cleos system newaccount --transfer eosio txn.test.a EOS5hBSuDvcU2hHZJLAWCzBCCS7pV6SeQ4FuMhLPQPYqu9hcFakhy --stake-net "100000000.0000 EOS" --stake-cpu "100000000.0000 EOS" --buy-ram "20000.0000 EOS"
+cleos system newaccount --transfer eosio txn.test.b EOS5gUGqvjsoAmqEJvSBAygi7XF75CaCDfpysZRRVPRBdAzcirTWG --stake-net "100000000.0000 EOS" --stake-cpu "100000000.0000 EOS" --buy-ram "20000.0000 EOS"
+cleos system newaccount --transfer eosio txn.test.t EOS5gUGqvjsoAmqEJvSBAygi7XF75CaCDfpysZRRVPRBdAzcirTWG --stake-net "100000000.0000 EOS" --stake-cpu "100000000.0000 EOS" --buy-ram "20000.0000 EOS"

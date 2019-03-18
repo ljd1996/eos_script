@@ -19,6 +19,7 @@ function clean() {
 	rm -rf key/*
 	rm -rf init.key
 	pkill nodeos
+	pkill keosd
 	echo "clean successfully."
 }
 
@@ -57,6 +58,7 @@ function prepare() {
 
 	rm -rf data/*
 	pkill nodeos
+	pkill keosd
 
 	keosd > log/keosd.log 2>&1 &
 	echo -e "\n---keosd prepared---"
@@ -149,18 +151,18 @@ function run_vote() {
 
 	echo -e "\n---deploy the contract and create token---"
 	cd $3
-	cleos set contract eosio.bios ./eosio.bios
+	# cleos set contract eosio.bios ./eosio.bios
 	cleos set contract eosio.token ./eosio.token
 	cleos set contract eosio.msig ./eosio.msig
 	cleos set contract eosio ./eosio.system
 	cd -
 
-	cleos push action eosio.token create '["eosio", "10000000000.0000 SYS"]' -p eosio.token
-	cleos push action eosio.token issue '["eosio", "10000000000.0000 SYS", "memo"]' -p eosio
+	cleos push action eosio.token create '["eosio", "10000000000.0000 EOS"]' -p eosio.token
+	cleos push action eosio.token issue '["eosio", "10000000000.0000 EOS", "memo"]' -p eosio
 	cleos push action eosio setpriv '["eosio.msig", 1]' -p eosio@active
 
 	echo -e "\n---create producer account---"
-	cleos push action eosio init '[0, "4,SYS"]' -p eosio@active
+	cleos push action eosio init '[0, "4,EOS"]' -p eosio@active
 
 	for((x=2;x<=$4;x++));do
 		pub_key_t=$(cat key/prod$x.key | awk '/Public/ {print $3}')
@@ -179,28 +181,31 @@ function run_vote() {
 		fi
 		echo "---${name}---${name1}---"
 		echo "---${pub_key_t}---${priv_key_t}---"
-		cleos system newaccount --transfer eosio $name $pub_key_t --stake-net "100000000.0000 SYS" \
-	    --stake-cpu "100000000.0000 SYS" --buy-ram "20000.0000 SYS"   
-		cleos transfer eosio $name "20000.0000 SYS"
-		cleos system newaccount --transfer eosio $name1 $pub_key_t --stake-net "100000000.0000 SYS" \
-	    --stake-cpu "100000000.0000 SYS" --buy-ram "20000.0000 SYS"   
-		cleos transfer eosio $name1 "20000.0000 SYS"
+		cleos system newaccount --transfer eosio $name $pub_key_t --stake-net "100000000.0000 EOS" \
+	    --stake-cpu "100000000.0000 EOS" --buy-ram "20000.0000 EOS"   
+		cleos transfer eosio $name "20000.0000 EOS"
+		cleos system newaccount --transfer eosio $name1 $pub_key_t --stake-net "100000000.0000 EOS" \
+	    --stake-cpu "100000000.0000 EOS" --buy-ram "20000.0000 EOS"   
+		cleos transfer eosio $name1 "20000.0000 EOS"
 
 		cleos system regproducer $name $pub_key_t
 	done
 
 	for((x=2;x<=$4;x++));do
+		pub_key_t=$(cat key/prod$x.key | awk '/Public/ {print $3}')
+		priv_key_t=$(cat key/prod$x.key | awk '/Private/ {print $3}')
+
 		echo -e "\n----------------------"
 		echo "---start node $x---"
 		tmp=$(expr $x / 5)
-		name="node"
+		name="prod"
 		for((i=0;i<$tmp;i++));do
 			name=${name}5
 		done
 		if [[ $(expr $x % 5) != 0 ]]; then
 			name=$name$(expr $x % 5)
 		fi
-		nodeos --producer-name $name --config node$x.ini --config-dir conf \
+		nodeos --producer-name $name --signature-provider $pub_key_t=KEY:$priv_key_t --config node$x.ini --config-dir conf \
 	    --data-dir data/node$x --private-key $priv_key > log/node$x.log 2>&1 &
 	done
 }
@@ -221,7 +226,7 @@ function vote() {
 			fi
 		done
 		echo -e "${name}---${name1}\n"
-		cleos system voteproducer prods name name1
+		cleos system voteproducer prods $name1 $name
 	done
 }
 
@@ -237,6 +242,9 @@ case "$1" in
         ;;
     run)
         run $1 $2 $3 $4
+        ;;
+    prepare)
+        prepare $1 $2 $3 $4
         ;;
     *)
     usage

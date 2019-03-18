@@ -1,0 +1,8 @@
+sudo iptables -t mangle -F
+sudo tc qdisc del dev lo root
+sudo tc qdisc add dev lo root handle 1: htb default 1
+sudo tc class add dev lo parent 1: classid 1:1 htb rate 100mbps
+sudo tc class add dev lo parent 1:1 classid 1:5 htb rate 256Kbit ceil 512Kbit prio 1
+sudo tc filter add dev lo parent 1:0 prio 1 protocol ip handle 5 fw flowid 1:5
+sudo iptables -A OUTPUT -t mangle -p tcp --sport 9877:9879 -j MARK --set-mark 5
+sudo iptables -A INPUT -t mangle -p tcp --sport 9877:9879 -j MARK --set-mark 5
